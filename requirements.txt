@@ -1,0 +1,7 @@
+haystack-ai==0.79.0
+ipython
+more_itertools
+langdetect
+streamlit
+python-dotenv
+watchdog
