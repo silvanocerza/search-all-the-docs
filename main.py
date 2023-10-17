@@ -50,13 +50,13 @@ def fetch(documentations: List[Tuple[str, str, str]]):
     return paths
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def document_store():
     # We're going to store the processed documents in here
     return MemoryDocumentStore()
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def index_files(files):
     # We create some components
     text_converter = TextFileToDocument(progress_bar=False)
