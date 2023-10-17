@@ -33,6 +33,7 @@ DOCUMENTATIONS = [
         "https://github.com/elastic/elasticsearch.git",
         "./docs/**/*.asciidoc",
     ),
+    ("numpy", "https://github.com/numpy/numpy.git", "./doc/**/*.rst"),
 ]
 
 
