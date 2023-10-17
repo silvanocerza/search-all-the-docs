@@ -5,8 +5,10 @@ import os
 
 from dotenv import load_dotenv
 from haystack.preview import Pipeline
+from haystack.preview.dataclasses import GeneratedAnswer
 from haystack.preview.components.retrievers import MemoryBM25Retriever
 from haystack.preview.components.generators.openai.gpt import GPTGenerator
+from haystack.preview.components.builders.answer_builder import AnswerBuilder
 from haystack.preview.components.builders.prompt_builder import PromptBuilder
 from haystack.preview.components.preprocessors import (
     DocumentCleaner,
@@ -77,34 +79,39 @@ def index_files(files):
     indexing_pipeline.run({"converter": {"paths": files}})
 
 
-def search(question: str) -> str:
-    retriever = MemoryBM25Retriever(document_store=document_store(), top_k=10)
+def search(question: str) -> GeneratedAnswer:
+    retriever = MemoryBM25Retriever(document_store=document_store(), top_k=5)
 
     template = """Take a deep breath and think then answer given the context
-    Context: {{ documents|map(attribute='text')|join('\n') }}
-    Question: {{ question }}
+    Context: {{ documents|map(attribute='text')|replace('\n', ' ')|join(';') }}
+    Question: {{ query }}
     Answer:
     """
     prompt_builder = PromptBuilder(template)
 
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     generator = GPTGenerator(api_key=OPENAI_API_KEY)
+    answer_builder = AnswerBuilder()
 
     pipe = Pipeline()
 
     pipe.add_component("docs_retriever", retriever)
-    pipe.add_component("builder", prompt_builder)
+    pipe.add_component("prompt_builder", prompt_builder)
     pipe.add_component("gpt35", generator)
+    pipe.add_component("answer_builder", answer_builder)
 
-    pipe.connect("docs_retriever.documents", "builder.documents")
-    pipe.connect("builder.prompt", "gpt35.prompt")
+    pipe.connect("docs_retriever.documents", "prompt_builder.documents")
+    pipe.connect("prompt_builder.prompt", "gpt35.prompt")
+    pipe.connect("docs_retriever.documents", "answer_builder.documents")
+    pipe.connect("gpt35.replies", "answer_builder.replies")
     res = pipe.run(
         {
             "docs_retriever": {"query": question},
-            "builder": {"question": question},
+            "prompt_builder": {"query": question},
+            "answer_builder": {"query": question},
         }
     )
-    return res["gpt35"]["replies"][0]
+    return res["answer_builder"]["answers"][0]
 
 
 with st.status(
@@ -129,5 +136,18 @@ if question := st.text_input(
     with st.spinner("Waiting"):
         answer = search(question)
 
-    st.balloons()
-    st.markdown(answer)
+    if not st.session_state.get("run_once", False):
+        st.balloons()
+        st.session_state["run_once"] = True
+
+    print(answer.data)
+    st.markdown(answer.data)
+    with st.expander("See sources:"):
+        for document in answer.documents:
+            url_source = document.metadata.get("url_source", "")
+            content = f"{url_source}: {document.text}" if url_source else document.text
+            if document.metadata.get("type") == "md":
+                st.markdown(content)
+            else:
+                st.write(content)
+            st.divider()
