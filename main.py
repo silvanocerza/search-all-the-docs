@@ -148,7 +148,7 @@ with st.status(
     st.session_state["expanded"] = False
 
 
-st.header("Documentation finder", divider="rainbow")
+st.header("🔎 Documentation finder", divider="rainbow")
 
 st.caption(
     f"Use this to search answers for {', '.join([d[0] for d in DOCUMENTATIONS])}"
@@ -164,14 +164,13 @@ if question := st.text_input(
         st.balloons()
         st.session_state["run_once"] = True
 
-    print(answer.data)
     st.markdown(answer.data)
     with st.expander("See sources:"):
         for document in answer.documents:
             url_source = document.metadata.get("url_source", "")
-            content = f"{url_source}: {document.text}" if url_source else document.text
-            if document.metadata.get("type") == "md":
-                st.markdown(content)
+            st.write(url_source)
+            if document.metadata.get("suffix") == ".md":
+                st.markdown(document.text)
             else:
-                st.write(content)
+                st.write(document.text)
             st.divider()
