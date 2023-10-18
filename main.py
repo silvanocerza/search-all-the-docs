@@ -39,15 +39,30 @@ DOCUMENTATIONS = [
 
 @st.cache_data(show_spinner=False)
 def fetch(documentations: List[Tuple[str, str, str]]):
-    paths = []
+    files = []
     for name, url, pattern in documentations:
         st.write(f"Fetching {name} repository")
         repo = Path(__file__).parent / "downloaded_docs" / name
         if not repo.exists():
             subprocess.run(["git", "clone", "--depth", "1", url, str(repo)], check=True)
-        paths.extend(repo.glob(pattern))
+        res = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            check=True,
+            capture_output=True,
+            encoding="utf-8",
+        )
+        branch = res.stdout.strip()
+        for p in repo.glob(pattern):
+            data = {
+                "path": p,
+                "metadata": {
+                    "url_source": f"{url}/tree/{branch}/{p.relative_to(repo)}",
+                    "suffix": p.suffix,
+                },
+            }
+            files.append(data)
 
-    return paths
+    return files
 
 
 @st.cache_resource(show_spinner=False)
@@ -76,8 +91,13 @@ def index_files(files):
     indexing_pipeline.connect("cleaner", "splitter")
     indexing_pipeline.connect("splitter", "writer")
 
-    # And now we clone and save the documentation in our MemoryDocumentStore
-    indexing_pipeline.run({"converter": {"paths": files}})
+    # And now we save the documentation in our MemoryDocumentStore
+    paths = []
+    metadata = []
+    for f in files:
+        paths.append(f["path"])
+        metadata.append(f["metadata"])
+    indexing_pipeline.run({"converter": {"paths": paths, "metadata": metadata}})
 
 
 def search(question: str) -> GeneratedAnswer:
