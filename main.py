@@ -24,16 +24,16 @@ load_dotenv()
 
 # This is the list of documentation that we're going to fetch
 DOCUMENTATIONS = [
-    ("docarray", "https://github.com/docarray/docarray.git", "./docs/**/*.md"),
-    ("streamlit", "https://github.com/streamlit/docs.git", "./content/**/*.md"),
-    ("jinja", "https://github.com/pallets/jinja.git", "./docs/**/*.rst"),
-    ("pandas", "https://github.com/pandas-dev/pandas.git", "./docs/source/**/*.rst"),
+    ("DocArray", "https://github.com/docarray/docarray", "./docs/**/*.md"),
+    ("Streamlit", "https://github.com/streamlit/docs", "./content/**/*.md"),
+    ("Jinja", "https://github.com/pallets/jinja", "./docs/**/*.rst"),
+    ("Pandas", "https://github.com/pandas-dev/pandas", "./docs/source/**/*.rst"),
     (
-        "elasticsearch",
-        "https://github.com/elastic/elasticsearch.git",
+        "Elasticsearch",
+        "https://github.com/elastic/elasticsearch",
         "./docs/**/*.asciidoc",
     ),
-    ("numpy", "https://github.com/numpy/numpy.git", "./doc/**/*.rst"),
+    ("NumPy", "https://github.com/numpy/numpy", "./doc/**/*.rst"),
 ]
 
 
