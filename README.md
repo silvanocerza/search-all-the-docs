@@ -1,4 +1,4 @@
-# Search all the docs demo
+![SEARCH ALL THE DOCS](meme.jpg)
 
 ## Getting started
 
