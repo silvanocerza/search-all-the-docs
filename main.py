@@ -97,35 +97,43 @@ def index_files(files):
     for f in files:
         paths.append(f["path"])
         metadata.append(f["metadata"])
-    indexing_pipeline.run({"converter": {"paths": paths, "metadata": metadata}})
+    indexing_pipeline.run(
+        {
+            "converter": {
+                "paths": paths,
+                "metadata": metadata,
+            }
+        }
+    )
 
 
 def search(question: str) -> GeneratedAnswer:
     retriever = MemoryBM25Retriever(document_store=document_store(), top_k=5)
 
-    template = """Take a deep breath and think then answer given the context
-    Context: {{ documents|map(attribute='text')|replace('\n', ' ')|join(';') }}
-    Question: {{ query }}
-    Answer:
-    """
+    template = (
+        "Take a deep breath and think then answer given the context"
+        "Context: {{ documents|map(attribute='text')|replace('\n', ' ')|join(';') }}"
+        "Question: {{ query }}"
+        "Answer:"
+    )
     prompt_builder = PromptBuilder(template)
 
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     generator = GPTGenerator(api_key=OPENAI_API_KEY)
     answer_builder = AnswerBuilder()
 
-    pipe = Pipeline()
+    query_pipeline = Pipeline()
 
-    pipe.add_component("docs_retriever", retriever)
-    pipe.add_component("prompt_builder", prompt_builder)
-    pipe.add_component("gpt35", generator)
-    pipe.add_component("answer_builder", answer_builder)
+    query_pipeline.add_component("docs_retriever", retriever)
+    query_pipeline.add_component("prompt_builder", prompt_builder)
+    query_pipeline.add_component("gpt35", generator)
+    query_pipeline.add_component("answer_builder", answer_builder)
 
-    pipe.connect("docs_retriever.documents", "prompt_builder.documents")
-    pipe.connect("prompt_builder.prompt", "gpt35.prompt")
-    pipe.connect("docs_retriever.documents", "answer_builder.documents")
-    pipe.connect("gpt35.replies", "answer_builder.replies")
-    res = pipe.run(
+    query_pipeline.connect("docs_retriever.documents", "prompt_builder.documents")
+    query_pipeline.connect("prompt_builder.prompt", "gpt35.prompt")
+    query_pipeline.connect("docs_retriever.documents", "answer_builder.documents")
+    query_pipeline.connect("gpt35.replies", "answer_builder.replies")
+    res = query_pipeline.run(
         {
             "docs_retriever": {"query": question},
             "prompt_builder": {"query": question},
