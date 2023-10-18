@@ -177,8 +177,5 @@ if question := st.text_input(
         for document in answer.documents:
             url_source = document.metadata.get("url_source", "")
             st.write(url_source)
-            if document.metadata.get("suffix") == ".md":
-                st.markdown(document.text)
-            else:
-                st.write(document.text)
+            st.text(document.text)
             st.divider()
