@@ -130,6 +130,9 @@ with st.status(
 
 st.header("Documentation finder", divider="rainbow")
 
+st.caption(
+    f"Use this to search answers for {', '.join([d[0] for d in DOCUMENTATIONS])}"
+)
 
 if question := st.text_input(
     label="What do you need to know?", placeholder="What is a DataFrame?"
