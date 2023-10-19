@@ -16,6 +16,12 @@ Install the dependencies:
 pip install -r requirements.txt
 ```
 
+Create a `.env` file with your OpenAI key:
+
+```
+OPENAI_API_KEY="<your_key_here>"
+```
+
 And you're good to go!
 
 ```shell
