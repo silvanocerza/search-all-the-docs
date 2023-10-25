@@ -1,3 +1,15 @@
+---
+title: SEARCH ALL THE DOCS
+emoji: 🔎
+colorFrom: yellow
+colorTo: pink
+python_version: 3.11
+sdk: streamlit
+sdk_version: 1.27.2
+app_file: main.py
+pinned: false
+---
+
 ![SEARCH ALL THE DOCS](meme.jpg)
 
 ## Getting started
