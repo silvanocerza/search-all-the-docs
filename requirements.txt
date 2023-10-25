@@ -1,7 +1,6 @@
 haystack-ai==0.79.0
-ipython
 more_itertools
 langdetect
-streamlit
+streamlit==1.27.2
 python-dotenv
 watchdog
