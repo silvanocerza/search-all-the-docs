@@ -27,7 +27,7 @@ DOCUMENTATIONS = [
     ("DocArray", "https://github.com/docarray/docarray", "./docs/**/*.md"),
     ("Streamlit", "https://github.com/streamlit/docs", "./content/**/*.md"),
     ("Jinja", "https://github.com/pallets/jinja", "./docs/**/*.rst"),
-    ("Pandas", "https://github.com/pandas-dev/pandas", "./docs/source/**/*.rst"),
+    ("Pandas", "https://github.com/pandas-dev/pandas", "./doc/source/**/*.rst"),
     (
         "Elasticsearch",
         "https://github.com/elastic/elasticsearch",
