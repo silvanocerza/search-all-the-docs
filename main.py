@@ -27,37 +27,31 @@ DOCUMENTATIONS = [
     (
         "DocArray",
         "https://github.com/docarray/docarray",
-        "/archive/refs/heads/main.zip",
         "./docs/**/*.md",
     ),
     (
         "Streamlit",
         "https://github.com/streamlit/docs",
-        "/archive/refs/heads/main.zip",
         "./content/**/*.md",
     ),
     (
         "Jinja",
         "https://github.com/pallets/jinja",
-        "/archive/refs/heads/main.zip",
         "./docs/**/*.rst",
     ),
     (
         "Pandas",
         "https://github.com/pandas-dev/pandas",
-        "/archive/refs/heads/main.zip",
         "./doc/source/**/*.rst",
     ),
     (
         "Elasticsearch",
         "https://github.com/elastic/elasticsearch",
-        "/archive/refs/heads/main.zip",
         "./docs/**/*.asciidoc",
     ),
     (
         "NumPy",
         "https://github.com/numpy/numpy",
-        "/archive/refs/heads/main.zip",
         "./doc/**/*.rst",
     ),
 ]
