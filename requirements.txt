@@ -4,4 +4,3 @@ langdetect
 streamlit==1.27.2
 python-dotenv
 watchdog
-requests

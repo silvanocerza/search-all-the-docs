@@ -1,8 +1,7 @@
 from typing import List, Tuple
 from pathlib import Path
 import os
-import zipfile
-import io
+import subprocess
 
 from dotenv import load_dotenv
 from haystack.preview import Pipeline
@@ -19,7 +18,6 @@ from haystack.preview.components.writers import DocumentWriter
 from haystack.preview.components.file_converters import TextFileToDocument
 from haystack.preview.document_stores.memory import MemoryDocumentStore
 import streamlit as st
-import requests
 
 # Load the environment variables, we're going to need it for OpenAI
 load_dotenv()
@@ -64,30 +62,34 @@ DOCUMENTATIONS = [
     ),
 ]
 
+DOCS_PATH = Path(__file__).parent / "downloaded_docs"
+
 
 @st.cache_data(show_spinner=False)
 def fetch(documentations: List[Tuple[str, str, str]]):
     files = []
-    docs_path = Path(__file__).parent / "downloaded_docs"
-    for name, url, zip_path, pattern in documentations:
-        st.write(f"Fetching {name} repository")
-        # All projects use `main` as the default branch
-        branch = "main"
-        # The name of the folder depends on the name of the repository
-        # on GitHub plus the branch zip we're downloading
-        repo_folder = docs_path / (url.split("/")[-1] + f"-{branch}")
-        if not repo_folder.exists():
-            res = requests.get(f"{url}{zip_path}", stream=True)
-            zip = zipfile.ZipFile(io.BytesIO(res.content))
-            # The zip file contains a folder with the name of the repository
-            # so we extract directly into the docs folder
-            zip.extractall(docs_path)
+    # Create the docs path if it doesn't exist
+    DOCS_PATH.mkdir(parents=True, exist_ok=True)
 
-        for p in repo_folder.glob(pattern):
+    for name, url, pattern in documentations:
+        st.write(f"Fetching {name} repository")
+        repo = DOCS_PATH / name
+        # Attempt cloning only if it doesn't exist
+        if not repo.exists():
+            subprocess.run(["git", "clone", "--depth", "1", url, str(repo)], check=True)
+        res = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            check=True,
+            capture_output=True,
+            encoding="utf-8",
+            cwd=repo,
+        )
+        branch = res.stdout.strip()
+        for p in repo.glob(pattern):
             data = {
                 "path": p,
                 "metadata": {
-                    "url_source": f"{url}/tree/{branch}/{p.relative_to(repo_folder)}",
+                    "url_source": f"{url}/tree/{branch}/{p.relative_to(repo)}",
                     "suffix": p.suffix,
                 },
             }
