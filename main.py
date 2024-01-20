@@ -1,23 +1,23 @@
-from typing import List, Tuple
-from pathlib import Path
 import os
 import subprocess
+from pathlib import Path
+from typing import List, Tuple
 
-from dotenv import load_dotenv
-from haystack.preview import Pipeline
-from haystack.preview.dataclasses import GeneratedAnswer
-from haystack.preview.components.retrievers import MemoryBM25Retriever
-from haystack.preview.components.generators.openai.gpt import GPTGenerator
-from haystack.preview.components.builders.answer_builder import AnswerBuilder
-from haystack.preview.components.builders.prompt_builder import PromptBuilder
-from haystack.preview.components.preprocessors import (
-    DocumentCleaner,
-    TextDocumentSplitter,
-)
-from haystack.preview.components.writers import DocumentWriter
-from haystack.preview.components.file_converters import TextFileToDocument
-from haystack.preview.document_stores.memory import MemoryDocumentStore
 import streamlit as st
+from dotenv import load_dotenv
+from haystack.components.builders.answer_builder import AnswerBuilder
+from haystack.components.builders.prompt_builder import PromptBuilder
+from haystack.components.converters import TextFileToDocument
+from haystack.components.generators.openai import OpenAIGenerator
+from haystack.components.preprocessors import (
+    DocumentCleaner,
+    DocumentSplitter,
+)
+from haystack.components.retrievers.in_memory import InMemoryBM25Retriever
+from haystack.components.writers import DocumentWriter
+from haystack.core.pipeline import Pipeline
+from haystack.dataclasses import GeneratedAnswer
+from haystack.document_stores.in_memory import InMemoryDocumentStore
 
 # Load the environment variables, we're going to need it for OpenAI
 load_dotenv()
@@ -82,7 +82,7 @@ def fetch(documentations: List[Tuple[str, str, str]]):
         for p in repo.glob(pattern):
             data = {
                 "path": p,
-                "metadata": {
+                "meta": {
                     "url_source": f"{url}/tree/{branch}/{p.relative_to(repo)}",
                     "suffix": p.suffix,
                 },
@@ -95,15 +95,15 @@ def fetch(documentations: List[Tuple[str, str, str]]):
 @st.cache_resource(show_spinner=False)
 def document_store():
     # We're going to store the processed documents in here
-    return MemoryDocumentStore()
+    return InMemoryDocumentStore()
 
 
 @st.cache_resource(show_spinner=False)
 def index_files(files):
     # We create some components
-    text_converter = TextFileToDocument(progress_bar=False)
+    text_converter = TextFileToDocument()
     document_cleaner = DocumentCleaner()
-    document_splitter = TextDocumentSplitter()
+    document_splitter = DocumentSplitter()
     document_writer = DocumentWriter(
         document_store=document_store(), policy="overwrite"
     )
@@ -118,24 +118,24 @@ def index_files(files):
     indexing_pipeline.connect("cleaner", "splitter")
     indexing_pipeline.connect("splitter", "writer")
 
-    # And now we save the documentation in our MemoryDocumentStore
+    # And now we save the documentation in our InMemoryDocumentStore
     paths = []
-    metadata = []
+    meta = []
     for f in files:
         paths.append(f["path"])
-        metadata.append(f["metadata"])
+        meta.append(f["meta"])
     indexing_pipeline.run(
         {
             "converter": {
-                "paths": paths,
-                "metadata": metadata,
+                "sources": paths,
+                "meta": meta,
             }
         }
     )
 
 
 def search(question: str) -> GeneratedAnswer:
-    retriever = MemoryBM25Retriever(document_store=document_store(), top_k=5)
+    retriever = InMemoryBM25Retriever(document_store=document_store(), top_k=5)
 
     template = (
         "Take a deep breath and think then answer given the context"
@@ -146,7 +146,7 @@ def search(question: str) -> GeneratedAnswer:
     prompt_builder = PromptBuilder(template)
 
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-    generator = GPTGenerator(api_key=OPENAI_API_KEY)
+    generator = OpenAIGenerator(api_key=OPENAI_API_KEY)
     answer_builder = AnswerBuilder()
 
     query_pipeline = Pipeline()
@@ -202,7 +202,7 @@ if question := st.text_input(
     st.markdown(answer.data)
     with st.expander("See sources:"):
         for document in answer.documents:
-            url_source = document.metadata.get("url_source", "")
+            url_source = document.meta.get("url_source", "")
             st.write(url_source)
-            st.text(document.text)
+            st.text(document.content)
             st.divider()
