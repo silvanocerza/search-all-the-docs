@@ -91,9 +91,9 @@ def fetch(documentations: List[Tuple[str, str, str]]):
 
 
 @st.cache_resource(show_spinner=False)
-def document_store():
+def document_store(index: str = "documentation"):
     # We're going to store the processed documents in here
-    return InMemoryDocumentStore()
+    return InMemoryDocumentStore(index=index)
 
 
 @st.cache_resource(show_spinner=False)
