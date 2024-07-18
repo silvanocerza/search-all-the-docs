@@ -16,6 +16,7 @@ from haystack.components.writers import DocumentWriter
 from haystack.core.pipeline import Pipeline
 from haystack.dataclasses import GeneratedAnswer
 from haystack.document_stores.in_memory import InMemoryDocumentStore
+from haystack.document_stores.types import DuplicatePolicy
 
 # Load the environment variables, we're going to need it for OpenAI
 load_dotenv()
@@ -103,7 +104,7 @@ def index_files(files):
     document_cleaner = DocumentCleaner()
     document_splitter = DocumentSplitter()
     document_writer = DocumentWriter(
-        document_store=document_store(), policy="overwrite"
+        document_store=document_store(), policy=DuplicatePolicy.OVERWRITE
     )
 
     # And our pipeline
