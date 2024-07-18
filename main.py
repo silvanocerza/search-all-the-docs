@@ -1,4 +1,3 @@
-import os
 import subprocess
 from pathlib import Path
 from typing import List, Tuple
@@ -145,8 +144,7 @@ def search(question: str) -> GeneratedAnswer:
     )
     prompt_builder = PromptBuilder(template)
 
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-    generator = OpenAIGenerator(api_key=OPENAI_API_KEY)
+    generator = OpenAIGenerator()
     answer_builder = AnswerBuilder()
 
     query_pipeline = Pipeline()
