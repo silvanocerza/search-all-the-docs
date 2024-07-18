@@ -152,13 +152,13 @@ def search(question: str) -> GeneratedAnswer:
 
     query_pipeline.add_component("docs_retriever", retriever)
     query_pipeline.add_component("prompt_builder", prompt_builder)
-    query_pipeline.add_component("gpt35", generator)
+    query_pipeline.add_component("llm", generator)
     query_pipeline.add_component("answer_builder", answer_builder)
 
     query_pipeline.connect("docs_retriever.documents", "prompt_builder.documents")
-    query_pipeline.connect("prompt_builder.prompt", "gpt35.prompt")
+    query_pipeline.connect("prompt_builder.prompt", "llm.prompt")
     query_pipeline.connect("docs_retriever.documents", "answer_builder.documents")
-    query_pipeline.connect("gpt35.replies", "answer_builder.replies")
+    query_pipeline.connect("llm.replies", "answer_builder.replies")
     res = query_pipeline.run({"query": question})
     return res["answer_builder"]["answers"][0]
 
