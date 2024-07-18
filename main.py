@@ -137,8 +137,9 @@ def search(question: str) -> GeneratedAnswer:
     retriever = InMemoryBM25Retriever(document_store=document_store(), top_k=5)
 
     template = (
-        "Take a deep breath and think then answer given the context"
-        "Context: {{ documents|map(attribute='text')|replace('\n', ' ')|join(';') }}"
+        "Using the information contained in the context, give a comprehensive answer to the question."
+        "If the answer cannot be deduced from the context, do not give an answer."
+        "Context: {{ documents|map(attribute='content')|replace('\n', ' ')|join(';') }}"
         "Question: {{ query }}"
         "Answer:"
     )
