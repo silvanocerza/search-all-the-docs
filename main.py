@@ -144,7 +144,7 @@ def search(question: str) -> GeneratedAnswer:
     )
     prompt_builder = PromptBuilder(template)
 
-    generator = OpenAIGenerator()
+    generator = OpenAIGenerator(model="gpt-4o")
     answer_builder = AnswerBuilder()
 
     query_pipeline = Pipeline()
@@ -158,13 +158,7 @@ def search(question: str) -> GeneratedAnswer:
     query_pipeline.connect("prompt_builder.prompt", "gpt35.prompt")
     query_pipeline.connect("docs_retriever.documents", "answer_builder.documents")
     query_pipeline.connect("gpt35.replies", "answer_builder.replies")
-    res = query_pipeline.run(
-        {
-            "docs_retriever": {"query": question},
-            "prompt_builder": {"query": question},
-            "answer_builder": {"query": question},
-        }
-    )
+    res = query_pipeline.run({"query": question})
     return res["answer_builder"]["answers"][0]
 
 
