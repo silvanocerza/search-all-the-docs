@@ -4,8 +4,7 @@ from typing import List, Tuple
 
 import streamlit as st
 from dotenv import load_dotenv
-from haystack.components.builders.answer_builder import AnswerBuilder
-from haystack.components.builders.prompt_builder import PromptBuilder
+from haystack.components.builders import AnswerBuilder, PromptBuilder
 from haystack.components.converters import TextFileToDocument
 from haystack.components.generators.openai import OpenAIGenerator
 from haystack.components.preprocessors import (
